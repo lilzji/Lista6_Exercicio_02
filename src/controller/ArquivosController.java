@@ -104,25 +104,38 @@ public class ArquivosController implements IArquivosController {
 	@Override
 	public void readFileAndFilter(String path, String nome, String ano, String mes) throws IOException {
 		File arq = new File(path, nome);
-		if (arq.exists() && arq.isFile()) {
-			FileInputStream fluxo = new FileInputStream(arq);
-			InputStreamReader leitor = new InputStreamReader(fluxo);
-			BufferedReader buffer = new BufferedReader(leitor);
-			String linha = buffer.readLine();
-			while (linha != null) {
-				String[] dados = linha.split(",");
-				if (dados[1].equals(ano) && dados[2].equals(mes)) {
-					String[] conteudo = dados;
-					createFile(path, nome, conteudo);
-				}
-				linha = buffer.readLine();
-			}
-			buffer.close();
-			leitor.close();
-			fluxo.close();
-		} else {
-			throw new IOException("Arquivo invalido.");
+		File dir = new File(path);
+		
+		if(!dir.exists() || !dir.isDirectory()) {
+			throw new IOException("Diretorio invalido");
 		}
+		
+		if(!arq.exists() || !arq.isFile()) {
+			throw new IOException("Arquivo invalido");
+		}
+		
+		FileInputStream fluxo = new FileInputStream(arq);
+	    InputStreamReader leitor = new InputStreamReader(fluxo);
+	    BufferedReader buffer = new BufferedReader(leitor);
+	    String linha = buffer.readLine();
+	    StringBuilder conteudoFiltrado = new StringBuilder();
+	    while(linha != null) {
+	    	String[] dados = linha.split(",");
+	    	if(dados[1].equals(ano) && dados[2].equals(mes)) {
+	    		conteudoFiltrado.append(dados[0]).append(";").append(dados[3]).append("\n");
+	    	}
+	    	linha = buffer.readLine();
+	    }
+	    buffer.close();
+	    leitor.close();
+	    fluxo.close();
+	    File arqCriado = new File(path, "teste.csv");
+	    FileWriter escritorArquivo = new FileWriter(arqCriado);
+	    PrintWriter writer = new PrintWriter(escritorArquivo);
+	    writer.write(conteudoFiltrado.toString());
+	    writer.close();
+	    escritorArquivo.close();
+
 	}
 
 }
